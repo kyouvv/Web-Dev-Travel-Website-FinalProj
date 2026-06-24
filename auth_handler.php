@@ -8,7 +8,6 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
 $action = isset($_POST['action']) ? trim($_POST['action']) : '';
 
-// Establish unified SQLite connection
 try {
     $dbPath = __DIR__ . '/data/newsletter.db';
     $db = new PDO('sqlite:' . $dbPath);
@@ -30,9 +29,6 @@ if ($action === 'logout') {
     exit;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// LOGIN OPERATION
-// ─────────────────────────────────────────────────────────────────────────────
 if ($action === 'login') {
     $email = filter_var(trim($_POST['email'] ?? ''), FILTER_SANITIZE_EMAIL);
     $password = $_POST['password'] ?? '';
@@ -71,9 +67,7 @@ if ($action === 'login') {
     exit;
 } 
 
-// ─────────────────────────────────────────────────────────────────────────────
-// REGISTRATION OPERATION
-// ─────────────────────────────────────────────────────────────────────────────
+
 if ($action === 'register') {
     $name = htmlspecialchars(trim($_POST['name'] ?? ''), ENT_QUOTES, 'UTF-8');
     $email = filter_var(trim($_POST['email'] ?? ''), FILTER_SANITIZE_EMAIL);

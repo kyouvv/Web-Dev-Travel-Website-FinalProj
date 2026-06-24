@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="lemonade">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Palawan - Discover the Last Frontier</title>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn { animation: fadeIn 0.4s ease-out forwards; }
+    </style>
+</head>
+<body class="min-h-screen bg-base-100 flex flex-col justify-between">
+
+    <div class="navbar bg-base-100 shadow-md sticky top-0 z-50 px-4 md:px-12">
+        <div class="flex-1">
+            <a href="#" id="navHomeLogo" class="btn btn-ghost text-xl font-bold tracking-wider text-primary">PALAWAN</a>
+        </div>
+        <div class="flex-none gap-4">
+            <ul class="menu menu-horizontal px-1 font-semibold gap-1">
+                <li><a href="#" id="navHome" class="active">Home</a></li>
+                <li><a href="#" id="navAttractions">Destinations</a></li>
+                <li id="navInquiriesContainer" class="hidden"><a href="#" id="navInquiries">My Inquiries</a></li>
+            </ul>
+            <div class="flex gap-2">
+                <div id="userControls" class="hidden flex items-center gap-2">
+                    <span id="userGreeting" class="text-sm font-semibold opacity-80 hidden sm:inline"></span>
+                    <button id="logoutBtn" class="btn btn-outline btn-error btn-sm font-semibold">Logout</button>
+                </div>
+                <div id="guestControls" class="flex gap-2">
+                    <button class="btn btn-ghost btn-sm font-semibold" onclick="login_modal.showModal()">Login</button>
+                    <button class="btn btn-primary btn-sm font-semibold" onclick="register_modal.showModal()">Register</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <main id="appContent" class="flex-grow">
+        </main>
+
+    <section id="newsletter" class="bg-primary text-primary-content py-12 px-4 text-center">
+        <div class="max-w-md mx-auto">
+            <h2 class="text-2xl font-bold mb-2">Get Your Holiday Guide</h2>
+            <form id="newsletterForm" class="flex flex-col sm:flex-row gap-2 justify-center items-stretch">
+                <input type="email" id="emailInput" name="email" placeholder="Enter your email address" class="input input-bordered w-full text-base-content" required />
+                <button type="submit" id="submitBtn" class="btn btn-secondary px-6">
+                    <span id="btnText">Subscribe</span>
+                    <span id="btnSpinner" class="loading loading-spinner hidden"></span>
+                </button>
+            </form>
+            <div id="statusMessage" class="mt-4 hidden alert max-w-md mx-auto"></div>
+        </div>
+    </section>
+
+    <footer class="footer footer-center bg-neutral text-neutral-content p-6">
+        <aside><p>Copyright © 2026 - Palawan Expeditions</p></aside>
+    </footer>
+
+    <dialog id="login_modal" class="modal modal-bottom sm:modal-middle">
+        <div class="modal-box">
+            <form method="dialog"><button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button></form>
+            <h3 class="text-2xl font-bold mb-6 text-center text-primary">Welcome Back</h3>
+            <div id="loginAlert" class="alert hidden text-sm mb-4"></div>
+            <form id="loginForm" class="space-y-4">
+                <input type="hidden" name="action" value="login" />
+                <div class="form-control">
+                    <label class="label"><span class="label-text font-semibold">Email Address</span></label>
+                    <input type="email" name="email" placeholder="you@example.com" class="input input-bordered w-full" required />
+                </div>
+                <div class="form-control">
+                    <label class="label"><span class="label-text font-semibold">Password</span></label>
+                    <input type="password" name="password" placeholder="••••••••" class="input input-bordered w-full" required />
+                </div>
+                <button type="submit" id="loginSubmit" class="btn btn-primary w-full mt-2">
+                    <span class="btn-text">Sign In</span>
+                    <span class="loading loading-spinner hidden"></span>
+                </button>
+            </form>
+            <p class="text-center text-sm mt-6">Don't have an account? <button class="link link-primary font-semibold" onclick="login_modal.close(); register_modal.showModal()">Register here</button></p>
+        </div>
+    </dialog>
+
+    <dialog id="register_modal" class="modal modal-bottom sm:modal-middle">
+        <div class="modal-box">
+            <form method="dialog"><button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button></form>
+            <h3 class="text-2xl font-bold mb-6 text-center text-primary">Create Your Account</h3>
+            <div id="registerAlert" class="alert hidden text-sm mb-4"></div>
+            <form id="registerForm" class="space-y-4">
+                <input type="hidden" name="action" value="register" />
+                <div class="form-control">
+                    <label class="label"><span class="label-text font-semibold">Full Name</span></label>
+                    <input type="text" name="name" placeholder="John Doe" class="input input-bordered w-full" required />
+                </div>
+                <div class="form-control">
+                    <label class="label"><span class="label-text font-semibold">Email Address</span></label>
+                    <input type="email" name="email" placeholder="you@example.com" class="input input-bordered w-full" required />
+                </div>
+                <div class="form-control">
+                    <label class="label"><span class="label-text font-semibold">Password</span></label>
+                    <input type="password" name="password" placeholder="Min. 8 characters" class="input input-bordered w-full" required />
+                </div>
+                <button type="submit" id="registerSubmit" class="btn btn-primary w-full mt-2">
+                    <span class="btn-text">Sign Up</span>
+                    <span class="loading loading-spinner hidden"></span>
+                </button>
+            </form>
+            <p class="text-center text-sm mt-6">Already have an account? <button class="link link-primary font-semibold" onclick="register_modal.close(); login_modal.showModal()">Login here</button></p>
+        </div>
+    </dialog>
+
+    <script src="index.js"></script>
+</body>
+</html>
