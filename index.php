@@ -1,3 +1,9 @@
+<?php
+require_once __DIR__ . '/auth.php';
+
+$currentUser = currentUser();
+?>
+
 <!DOCTYPE html>
 <html lang="en" data-theme="emerald">
 <head>
@@ -20,11 +26,24 @@
         <div class="flex-1">
             <a href="#" id="navHomeLogo" class="btn btn-ghost text-xl font-bold tracking-wider text-primary">PALAWAN</a>
         </div>
-        <div class="flex-none">
+        <div class="flex-none gap-4">
             <ul class="menu menu-horizontal px-1 font-semibold gap-1">
                 <li><a href="#" id="navHome" class="active">Home</a></li>
                 <li><a href="#" id="navAttractions">Destinations</a></li>
             </ul>
+            <div class="flex gap-2">
+                <?php if ($currentUser['id']): ?>
+                    <span class="text-sm font-semibold opacity-80 hidden sm:inline">
+                        Hi, <?php echo htmlspecialchars($currentUser['username']); ?>!
+                    </span>
+                    <button id="logoutBtn" class="btn btn-outline btn-error btn-sm font-semibold" onclick="logout()">
+                        Logout
+                    </button>
+                <?php else: ?>
+                    <button class="btn btn-ghost btn-sm font-semibold" onclick="login_modal.showModal()">Login</button>
+                    <button class="btn btn-primary btn-sm font-semibold" onclick="register_modal.showModal()">Register</button>
+                <?php endif; ?>
+            </div>
         </div>
     </div>
 
@@ -83,8 +102,80 @@
         <aside><p>Copyright © 2026 - Palawan Expeditions</p></aside>
     </footer>
 
+
+    <dialog id="login_modal" class="modal modal-bottom sm:modal-middle">
+        <div class="modal-box">
+            <form method="dialog">
+                <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+            </form>
+            <h3 class="text-2xl font-bold mb-6 text-center text-primary">Welcome Back</h3>
+            
+            <div id="loginAlert" class="alert hidden text-sm mb-4"></div>
+
+            <form id="loginForm" class="space-y-4">
+                <input type="hidden" name="action" value="login" />
+                <div class="form-control">
+                    <label class="label"><span class="label-text font-semibold">Email Address</span></label>
+                    <input type="email" name="email" placeholder="you@example.com" class="input input-bordered w-full" required />
+                </div>
+                <div class="form-control">
+                    <label class="label"><span class="label-text font-semibold">Password</span></label>
+                    <input type="password" name="password" placeholder="••••••••" class="input input-bordered w-full" required />
+                    <label class="label justify-end">
+                        <a href="#" class="label-text-alt link link-hover text-secondary">Forgot password?</a>
+                    </label>
+                </div>
+                <button type="submit" id="loginSubmit" class="btn btn-primary w-full mt-2">
+                    <span class="btn-text">Sign In</span>
+                    <span class="loading loading-spinner hidden"></span>
+                </button>
+            </form>
+            
+            <p class="text-center text-sm mt-6">
+                Don't have an account? 
+                <button class="link link-primary font-semibold" onclick="login_modal.close(); register_modal.showModal()">Register here</button>
+            </p>
+        </div>
+    </dialog>
+
+    <dialog id="register_modal" class="modal modal-bottom sm:modal-middle">
+        <div class="modal-box">
+            <form method="dialog">
+                <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+            </form>
+            <h3 class="text-2xl font-bold mb-6 text-center text-primary">Create Your Account</h3>
+            
+            <div id="registerAlert" class="alert hidden text-sm mb-4"></div>
+
+            <form id="registerForm" class="space-y-4">
+                <input type="hidden" name="action" value="register" />
+                <div class="form-control">
+                    <label class="label"><span class="label-text font-semibold">Full Name</span></label>
+                    <input type="text" name="name" placeholder="John Doe" class="input input-bordered w-full" required />
+                </div>
+                <div class="form-control">
+                    <label class="label"><span class="label-text font-semibold">Email Address</span></label>
+                    <input type="email" name="email" placeholder="you@example.com" class="input input-bordered w-full" required />
+                </div>
+                <div class="form-control">
+                    <label class="label"><span class="label-text font-semibold">Password</span></label>
+                    <input type="password" name="password" placeholder="Min. 8 characters" class="input input-bordered w-full" required />
+                </div>
+                <button type="submit" id="registerSubmit" class="btn btn-primary w-full mt-2">
+                    <span class="btn-text">Sign Up</span>
+                    <span class="loading loading-spinner hidden"></span>
+                </button>
+            </form>
+            
+            <p class="text-center text-sm mt-6">
+                Already have an account? 
+                <button class="link link-primary font-semibold" onclick="register_modal.close(); login_modal.showModal()">Login here</button>
+            </p>
+        </div>
+    </dialog>
+
+
     <script>
-        // Cache the default homepage HTML view locally in memory so reverting back is instant!
         const initialHomeHTML = document.getElementById('homeView').outerHTML;
         const appContent = document.getElementById('appContent');
         
@@ -114,7 +205,6 @@
             e.preventDefault();
             updateActiveTab(navAttractions);
 
-            // Add a temporary subtle loading screen inside the component wrapper
             appContent.innerHTML = `
                 <div class="flex justify-center items-center min-h-[50vh]">
                     <span class="loading loading-dots loading-lg text-primary"></span>
@@ -127,17 +217,13 @@
                     return response.text();
                 })
                 .then(htmlMarkup => {
-                    // Inject new segment dynamically without reloading browser
                     appContent.innerHTML = htmlMarkup;
-
-                    // innerHTML does NOT execute <script> tags — re-run them manually
                     appContent.querySelectorAll('script').forEach(oldScript => {
                         const newScript = document.createElement('script');
                         newScript.textContent = oldScript.textContent;
                         document.body.appendChild(newScript);
                         oldScript.remove();
                     });
-
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                 })
                 .catch(err => {
@@ -185,6 +271,77 @@
                 statusMessage.textContent = "An error occurred.";
             });
         });
+
+        function handleAuthSubmit(formId, submitBtnId, alertId, modalObject) {
+            document.getElementById(formId).addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const form = e.target;
+                const submitBtn = document.getElementById(submitBtnId);
+                const btnText = submitBtn.querySelector('.btn-text');
+                const btnSpinner = submitBtn.querySelector('.loading');
+                const alertBox = document.getElementById(alertId);
+
+                // UI loading state
+                submitBtn.disabled = true;
+                btnText.classList.add('hidden');
+                btnSpinner.classList.remove('hidden');
+                alertBox.classList.add('hidden');
+
+                const formData = new FormData(form);
+
+                fetch('auth_handler.php', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(res => {
+                    if (!res.ok) throw new Error('Server returned error status');
+                    return res.json();
+                })
+                .then(data => {
+                    // Revert button interface state
+                    submitBtn.disabled = false;
+                    btnText.classList.remove('hidden');
+                    btnSpinner.classList.add('hidden');
+
+                    alertBox.className = `alert text-sm mb-4 block ${data.status === 'success' ? 'alert-success text-success-content' : 'alert-error text-error-content'}`;
+                    alertBox.textContent = data.message;
+
+                    if (data.status === 'success') {
+                        form.reset();
+                        // Optional: close modal and reload after brief visual feedback
+                        setTimeout(() => {
+                            alertBox.classList.add('hidden');
+                            modalObject.close();
+                            if (data.redirect) window.location.href = data.redirect;
+                        }, 1200);
+                    }
+                })
+                .catch(err => {
+                    submitBtn.disabled = false;
+                    btnText.classList.remove('hidden');
+                    btnSpinner.classList.add('hidden');
+                    
+                    alertBox.className = "alert alert-error text-error-content text-sm mb-4 block";
+                    alertBox.textContent = "An unexpected error occurred. Please try again.";
+                });
+            });
+        }
+
+        // Bind logic onto active dialogue items
+        handleAuthSubmit('loginForm', 'loginSubmit', 'loginAlert', login_modal);
+        handleAuthSubmit('registerForm', 'registerSubmit', 'registerAlert', register_modal);
+
+        const logoutBtn = document.getElementById('logoutBtn');
+        function logout() {
+            console.log('Logging out...');
+            const fd = new FormData();
+            fd.append('action', 'logout');
+            fetch('auth_handler.php', { method: 'POST', body: fd })
+                .then(() => window.location.reload());
+        }
+
+        document.getElementById('logoutBtn')?.addEventListener('click', logout);
     </script>
 </body>
 </html>
